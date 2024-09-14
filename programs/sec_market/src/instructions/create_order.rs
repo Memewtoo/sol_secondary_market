@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{associated_token::AssociatedToken, token::{transfer, Mint, Token, TokenAccount, Transfer}};
 
 use crate::state::Order;
+use crate::error::Error;
 
 #[derive(Accounts)]
 #[instruction(seed:u64)]
@@ -34,6 +35,9 @@ pub struct CreateOrder<'info> {
     pub escrow_token_account: Account<'info, TokenAccount>,
 
     #[account(mut)]
+    pub price_token_mint: Account<'info, Mint>,
+
+    #[account(mut)]
     pub creator_token_account: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
@@ -51,14 +55,22 @@ pub fn handler(ctx: Context<CreateOrder>, seed: u64, price: u64, amount: u64, ex
 
 impl<'info> CreateOrder<'info> {
     pub fn create_order(&mut self, seed: u64, price: u64, amount: u64, expiration: i64, bumps: &CreateOrderBumps) -> Result<()> {
+        let expiration_seconds = expiration
+            .checked_mul(86400) // duration in days to seconds
+            .ok_or(Error::Overflow)?;
+
+        let expiration_timestamp = Clock::get()?.unix_timestamp
+            .checked_add(expiration_seconds)
+            .ok_or(Error::Overflow)?;
+
         self.order.set_inner(Order {
             seed,
             creator: self.creator.key(),
             price,
             amount,
             remaining_amount: amount,
-            price_mint: self.vault_token_mint.key(),
-            expiration: Clock::get()?.unix_timestamp + expiration * 86400, //duration in days
+            price_mint: self.price_token_mint.key(),
+            expiration: expiration_timestamp,
             order_bump: bumps.order,
         });
 
