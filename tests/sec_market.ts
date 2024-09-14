@@ -108,6 +108,7 @@ describe("sec_market", () => {
       .accounts({
         creator: creator.publicKey,
         vaultTokenMint,
+        priceTokenMint: usdcMint,
         creatorTokenAccount,
       })
       .signers([creator])
@@ -144,7 +145,7 @@ describe("sec_market", () => {
     const newDuration = new anchor.BN(2); // 2 days
   
     const modify_order_tx = await program.methods
-      .modifyOrder(seed, newAmount, newPrice, newDuration)
+      .modifyOrder(newAmount, newPrice, newDuration)
       .accountsPartial({
         creator: creator.publicKey,
         order: orderPDA,
@@ -210,7 +211,7 @@ describe("sec_market", () => {
 
   it("Fails to cancel a partially filled order", async () => {
     try {
-      const cancel_order_tx = await program.methods.cancelOrder(seed)
+      const cancel_order_tx = await program.methods.cancelOrder()
         .accountsPartial({
           creator: creator.publicKey,
           escrowTokenAccount,
@@ -257,6 +258,7 @@ describe("sec_market", () => {
       .accountsPartial({
         creator: creator.publicKey,
         vaultTokenMint,
+        priceTokenMint: usdcMint,
         creatorTokenAccount,
         order: newOrderPDA,
       })
@@ -273,7 +275,7 @@ describe("sec_market", () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Now settle the expired order
-    const settle_expired_order_tx = await program.methods.settleExpiredOrder(new_seed)
+    const settle_expired_order_tx = await program.methods.settleExpiredOrder()
       .accountsPartial({
         creator: creator.publicKey,
         escrowTokenAccount: new_escrowTokenAccount,
