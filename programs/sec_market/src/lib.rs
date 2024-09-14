@@ -31,17 +31,16 @@ pub mod sec_market {
             expiration)
     }
 
-    pub fn cancel_order(ctx: Context<CancelOrder>, _seed: u64) -> Result<()> {
+    pub fn cancel_order(ctx: Context<CancelOrder>) -> Result<()> {
         cancel_order::handler(ctx)
     }
 
-    pub fn settle_expired_order(ctx: Context<SettleExpiredOrder>, _seed: u64) -> Result<()> {
+    pub fn settle_expired_order(ctx: Context<SettleExpiredOrder>) -> Result<()> {
         settle_expired_order::handler(ctx)
     }
 
     pub fn modify_order(
         ctx: Context<ModifyOrder>,
-        _seed: u64,
         new_amount: Option<u64>,
         new_price: Option<u64>,
         new_duration: Option<i64>

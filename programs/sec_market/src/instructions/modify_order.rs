@@ -5,7 +5,6 @@ use crate::state::Order;
 use crate::error::Error;
 
 #[derive(Accounts)]
-#[instruction(seed: u64)]
 pub struct ModifyOrder<'info> {
     #[account(mut)]
     pub creator: Signer<'info>,
@@ -15,7 +14,7 @@ pub struct ModifyOrder<'info> {
         seeds = [
             b"order", 
             creator.key().as_ref(),
-            seed.to_le_bytes().as_ref(),
+            order.seed.to_le_bytes().as_ref(),
             ],
         bump,
     )]
